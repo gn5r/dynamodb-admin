@@ -421,14 +421,32 @@ export function setupRoutes(app: Express, ddbApi: DynamoApiController): void {
     app.put('/tables/:TableName/add-item', bodyParser.json({ limit: '500kb' }), asyncMiddleware(async(req, res) => {
         const { TableName } = req.params;
         const tableDescription = await ddbApi.describeTable({ TableName });
-        await ddbApi.putItem({ TableName, Item: req.body });
-        const Key = extractKey(req.body, tableDescription.KeySchema!);
-        const response = await ddbApi.getItem({ TableName, Key });
-        if (!response.Item) {
-            res.status(404).send('Not found');
-            return;
+
+        if (Array.isArray(req.body)) {
+            const Keys = [];
+            for (const i in req.body) {
+                const body = req.body[i];
+                await ddbApi.putItem({ TableName, Item: body });
+                const Key = extractKey(body, tableDescription.KeySchema!);
+                const response = await ddbApi.getItem({ TableName, Key });
+                if (!response.Item) {
+                    res.status(404).send('Not found');
+                    return;
+                }
+                Keys.push(Key);
+            }
+            res.json(Keys);
+        } else {
+            await ddbApi.putItem({ TableName, Item: req.body });
+            const Key = extractKey(req.body, tableDescription.KeySchema!);
+            const response = await ddbApi.getItem({ TableName, Key });
+            if (!response.Item) {
+                res.status(404).send('Not found');
+                return;
+            }
+            res.json(Key);
         }
-        res.json(Key);
+
         return;
     }));
 

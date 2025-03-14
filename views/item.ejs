@@ -51,6 +51,11 @@
             throw new Error(JSON.parse(responseText).message)
           }
         }).then((json) => {
+          if (Array.isArray(json) && document.location.pathname.endsWith('/add-item')) {
+            const urlPart1 = document.location.pathname.replace('/add-item', '')
+            window.location = urlPart1
+            return
+          }
           if (document.location.pathname.endsWith('/add-item')) {
             const urlPart1 = document.location.pathname.replace('/add-item', '')
             const param = encodeURIComponent(Object.values(json).join(','))
@@ -77,6 +82,26 @@
           handleError(error.message)
         })
       }
+
+      function handleOpenClick() {
+        document.getElementById('jsonFile').click()
+      }
+
+      function handleOpenFile(event) {
+        const file = event.currentTarget.files[0]
+        if (!file) return
+        event.currentTarget.value = ''
+
+        new Promise((resolve) => {
+          const fr = new FileReader()
+          fr.onload = (e) => resolve(e.currentTarget.result)
+          fr.readAsText(file)
+        })
+        .then(json => {
+          const editor = ace.edit('documentTextarea')
+          editor.session.setValue(json)
+        })
+      }
       </script>
       <button
         class='btn btn-primary'
@@ -86,6 +111,24 @@
       >
         Save
       </button>
+      <% if (isNew) { %>
+        <div class="d-inline-block">
+          <button
+            class='btn btn-success'
+            onclick='handleOpenClick()'
+            type='button'
+          >
+            Open JSON file
+            <input
+              id='jsonFile'
+              type='file'
+              onchange='handleOpenFile(event)'
+              accept="application/json"
+              style='display: none;'
+            >
+          </button>
+        </div>
+      <% } %>
 
       <script>
       function handleDeleteClick (event) {
