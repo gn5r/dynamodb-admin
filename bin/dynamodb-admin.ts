@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { readFileSync } from 'node:fs';
 import { ArgumentParser } from 'argparse';
 import open from 'open';

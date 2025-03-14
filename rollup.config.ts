@@ -1,4 +1,5 @@
 import { defineConfig } from 'rollup';
+import json from '@rollup/plugin-json';
 import commonJS from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
@@ -19,9 +20,11 @@ export default defineConfig({
         },
     ],
     plugins: [
+        json(),
         commonJS(),
         nodeResolve({ preferBuiltins: true }),
         bundleESM(),
         typescript(),
     ],
+    external: ['dotenv'],
 });
