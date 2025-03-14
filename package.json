@@ -15,6 +15,7 @@
   "scripts": {
     "build": "tsc && rimraf dist && rollup --config rollup.config.ts --configPlugin typescript",
     "build:watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
+    "dev": "tsx watch bin/dynamodb-admin.ts",
     "start": "nodemon dist/dynamodb-admin.js",
     "lint": "eslint .",
     "fix": "eslint --fix .",
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-typescript": "^12.1.1",
     "@types/argparse": "^2.0.17",
@@ -67,6 +69,7 @@
     "@types/lodash.pickby": "^4.6.9",
     "@types/node": "^20.17.6",
     "concurrently": "^9.1.0",
+    "dotenv": "^16.4.7",
     "eslint": "9.14.0",
     "eslint-config-rchl-base": "^2.0.4",
     "eslint-config-rchl-typescript": "^3.0.3",
@@ -76,6 +79,7 @@
     "rollup": "^4.27.2",
     "rollup-plugin-bundle-esm": "^0.1.1",
     "tslib": "^2.8.1",
+    "tsx": "^4.19.3",
     "typescript": "^5.6.3",
     "vitest": "^2.1.5"
   }
