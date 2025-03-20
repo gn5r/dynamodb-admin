@@ -205,6 +205,10 @@
       <div class="row">
         <div class="col-md-6">
           <button type="submit" class="btn btn-primary">Search</button>
+          <a id="deleteButton" href="#" class="btn btn-danger disabled" onclick="deleteItems('<%= encodeURIComponent(Table.TableName) %>'); return false">
+            Delete
+            <span id="itemCount" class="badge badge-secondary">0</span>
+          </a>
         </div>
 
         <div class="col-md-6 pagination-container d-none">
@@ -408,7 +412,7 @@
       if (data.Items.length) {
         $('#items-container').append(data.Items.map(item => {
           const viewUrl = '/tables/<%= encodeURIComponent(Table.TableName) %>/items/' + encodeURIComponent(Object.values(item.__key).join(','))
-          const rowEl = $('<tr><td><a href="' + viewUrl + '">View</a></td></tr>')
+          const rowEl = $('<tr><td><input type="checkbox" data-key="' + Object.values(item.__key).join(',') + '"></td><td><a href="' + viewUrl + '">View</a></td></tr>')
 
           for (const column of data.uniqueKeys) {
             const columnEl = $('<td></td>')
@@ -478,6 +482,8 @@
       $('#table-placeholder').addClass('d-none')
 
       updateFilterAutocomplete(data.uniqueKeys)
+
+      $('#items-container tr td input[type="checkbox"]').on("change", () => updateCheckboxCount())
     }
 
     window.addEventListener('load', () => {
@@ -528,6 +534,46 @@
           handleError(error.message)
         })
     })
+
+    function toggleAll(event) {
+      const value = event.currentTarget.checked
+      const checkboxes = $('#items-container tr td input[type="checkbox"]')
+      checkboxes.each((_, el) => $(el).prop('checked', value))
+      updateCheckboxCount()
+    }
+
+    function updateCheckboxCount() {
+      const count = $('#items-container td input[type="checkbox"]:checked').length
+      $("#itemCount").text(count)
+      if (count > 0) {
+        $("#deleteButton").removeClass("disabled")
+      } else {
+        $("#deleteButton").addClass("disabled")
+      }
+    }
+
+    function deleteItems(TableName) {
+      if (!confirm("Are you sure you want to delete checked items?")) {
+        return
+      }
+
+      const Keys = $('#items-container tr td input[type="checkbox"]:checked').map((_, el) => $(el).data('key')).get()
+      const query = Keys.map(key => `keys[]=${encodeURIComponent(key)}`).join('&')
+
+      fetch(`/tables/${encodeURIComponent(TableName)}/items?${query}`, {
+        method: 'delete'
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const responseText = await response.text()
+            throw new Error(JSON.parse(responseText).message)
+          }
+          location.reload()
+        })
+        .catch((error) => {
+          handleError(error.message)
+        })
+    }
     </script>
 
     <div id="table-placeholder" class="text-center">Loading data...</div>
@@ -540,6 +586,9 @@
         <table class="table items-table table-hover">
           <thead class="thead-light">
             <tr id="actions-row">
+              <th scope="col">
+                <input id="checkAll" type="checkbox" onchange="toggleAll(event)">
+              </th>
               <th scope="col">Actions</th>
             </tr>
           </thead>

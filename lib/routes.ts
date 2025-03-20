@@ -375,6 +375,24 @@ export function setupRoutes(app: Express, ddbApi: DynamoApiController): void {
         res.status(204).end();
     }));
 
+    app.delete('/tables/:TableName/items', asyncMiddleware(async(req, res) => {
+        const { TableName } = req.params;
+        const tableDescription = await ddbApi.describeTable({ TableName });
+        const Keys = req.query.keys as undefined | string[];
+        if (!Keys) {
+            res.send('There are no keys to delete');
+            return;
+        }
+        for (const i in Keys) {
+            const key = Keys[i];
+            await ddbApi.deleteItem({
+                TableName,
+                Key: parseKey(key, tableDescription),
+            });
+        }
+        res.status(204).end();
+    }));
+
     app.get('/tables/:TableName/add-item', asyncMiddleware(async(req, res) => {
         const { TableName } = req.params;
         const tableDescription = await ddbApi.describeTable({ TableName });
