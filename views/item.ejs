@@ -90,17 +90,29 @@
       function handleOpenFile(event) {
         const file = event.currentTarget.files[0]
         if (!file) return
+        if (!file.name.endsWith(".json")) {
+          handleError("Please select a JSON file.")
+          return
+        }
         event.currentTarget.value = ''
 
-        new Promise((resolve) => {
+        new Promise((resolve, reject) => {
           const fr = new FileReader()
-          fr.onload = (e) => resolve(e.currentTarget.result)
+          fr.onload = (e) => {
+            try {
+              JSON.parse(e.currentTarget.result)
+              resolve(e.currentTarget.result)
+            } catch(error) {
+              reject(error)
+            }
+          }
           fr.readAsText(file)
         })
         .then(json => {
           const editor = ace.edit('documentTextarea')
           editor.session.setValue(json)
         })
+        .catch(error => handleError(error.message))
       }
       </script>
       <button
