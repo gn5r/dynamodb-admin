@@ -483,7 +483,10 @@
 
       updateFilterAutocomplete(data.uniqueKeys)
 
-      $('#items-container tr td input[type="checkbox"]').on("change", () => updateCheckboxCount())
+      $('#items-container tr td input[type="checkbox"]').on("change", () => {
+        updateCheckboxCount()
+        updateToggleAllCheck()
+      })
     }
 
     window.addEventListener('load', () => {
@@ -549,6 +552,17 @@
         $("#deleteButton").removeClass("disabled")
       } else {
         $("#deleteButton").addClass("disabled")
+      }
+    }
+
+    function updateToggleAllCheck() {
+      const count = $('#items-container td input[type="checkbox"]:checked').length
+      const items = $('#items-container tr').length
+      const toggleAll = $('#checkAll')
+      if (count !== items && toggleAll.prop('checked')) {
+        toggleAll.prop('checked', false)
+      } else if (count === items && !toggleAll.prop('checked')) {
+        toggleAll.prop('checked', true)
       }
     }
 
